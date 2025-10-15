@@ -54,10 +54,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Navbar
-        cartItemsCount={cartItemsCount}
-        onSearch={setSearchQuery}
-      />
+      <Navbar onSearch={setSearchQuery} />
 
       <div
         className="h-64 bg-cover bg-center flex items-center justify-center mt-16"
@@ -88,13 +85,15 @@ const Index = () => {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">
-                  {selectedCategory === "Todos" ? "Todos os produtos" : selectedCategory}
+                  {selectedCategory === "Todos"
+                    ? "Todos os produtos"
+                    : selectedCategory}
                 </h2>
                 <p className="text-muted-foreground">
                   {filteredProducts.length} produto(s) encontrado(s)
                 </p>
               </div>
-              
+
               <Button
                 variant="outline"
                 onClick={() => setIsSidebarOpen(true)}

@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Store, CreditCard, Smartphone, Banknote, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Store,
+  CreditCard,
+  Smartphone,
+  Banknote,
+  QrCode,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,17 +17,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { DeliveryMethod, PaymentMethod } from "@/types/product";
+import useShoppingCart from "@/hooks/use-cart";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery");
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("delivery");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
   const [address, setAddress] = useState("");
   const [observations, setObservations] = useState("");
+  const { cartItems } = useShoppingCart();
 
-  const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
+  // const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
   const total = cartItems.reduce(
-    (sum: number, item: any) => sum + item.price * item.quantity,
+    (sum: number, item) => sum + item.price * item.quantity,
     0
   );
 
@@ -56,25 +67,40 @@ const Checkout = () => {
                 <CardTitle>Método de Recebimento</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}>
+                <RadioGroup
+                  value={deliveryMethod}
+                  onValueChange={(value) =>
+                    setDeliveryMethod(value as DeliveryMethod)
+                  }
+                >
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="delivery" id="delivery" />
-                    <Label htmlFor="delivery" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="delivery"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <MapPin className="h-5 w-5 text-primary" />
                       <div>
                         <p className="font-medium">Entrega</p>
-                        <p className="text-sm text-muted-foreground">Receba em casa</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receba em casa
+                        </p>
                       </div>
                     </Label>
                   </div>
 
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="pickup" id="pickup" />
-                    <Label htmlFor="pickup" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="pickup"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <Store className="h-5 w-5 text-primary" />
                       <div>
                         <p className="font-medium">Retirada</p>
-                        <p className="text-sm text-muted-foreground">Retire na loja</p>
+                        <p className="text-sm text-muted-foreground">
+                          Retire na loja
+                        </p>
                       </div>
                     </Label>
                   </div>
@@ -100,10 +126,18 @@ const Checkout = () => {
                 <CardTitle>Forma de Pagamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(value) =>
+                    setPaymentMethod(value as PaymentMethod)
+                  }
+                >
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="pix" id="pix" />
-                    <Label htmlFor="pix" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="pix"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <QrCode className="h-5 w-5 text-primary" />
                       <span className="font-medium">PIX</span>
                     </Label>
@@ -111,7 +145,10 @@ const Checkout = () => {
 
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="credit" id="credit" />
-                    <Label htmlFor="credit" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="credit"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <CreditCard className="h-5 w-5 text-primary" />
                       <span className="font-medium">Cartão de Crédito</span>
                     </Label>
@@ -119,7 +156,10 @@ const Checkout = () => {
 
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="debit" id="debit" />
-                    <Label htmlFor="debit" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="debit"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <Smartphone className="h-5 w-5 text-primary" />
                       <span className="font-medium">Cartão de Débito</span>
                     </Label>
@@ -127,7 +167,10 @@ const Checkout = () => {
 
                   <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="cash" id="cash" />
-                    <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Label
+                      htmlFor="cash"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
                       <Banknote className="h-5 w-5 text-primary" />
                       <span className="font-medium">Dinheiro</span>
                     </Label>
@@ -159,7 +202,7 @@ const Checkout = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  {cartItems.map((item: any) => (
+                  {cartItems.map((item) => (
                     <div key={item.id} className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
                         {item.quantity}x {item.name}
@@ -180,8 +223,8 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={handleConfirmOrder}
                 >

@@ -3,42 +3,29 @@ import { ArrowLeft, Trash2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import useShoppingCart from "@/hooks/use-cart";
 
 const Cart = () => {
   const navigate = useNavigate();
-  
-  // This will be replaced with actual cart state management
-  const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-  
-  const updateQuantity = (id: string, delta: number) => {
-    const updatedCart = cartItems.map((item: any) => 
-      item.id === id 
-        ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-        : item
-    );
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    window.location.reload();
+  const { cartItems, updateQuantity, removeFromCart } = useShoppingCart();
+
+  const handleUpdateQuantity = (cartId: string, newQuantity: number) => {
+    updateQuantity(cartId, newQuantity);
   };
 
-  const removeItem = (id: string) => {
-    const updatedCart = cartItems.filter((item: any) => item.id !== id);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    window.location.reload();
+  const handleRemoveItem = (cartId: string) => {
+    removeFromCart(cartId);
   };
 
   const total = cartItems.reduce(
-    (sum: number, item: any) => sum + item.price * item.quantity,
+    (sum: number, item) => sum + item.price * item.quantity,
     0
   );
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
+        <Button variant="ghost" onClick={() => navigate("/")} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar às compras
         </Button>
@@ -47,7 +34,9 @@ const Cart = () => {
 
         {cartItems.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-muted-foreground text-lg">Seu carrinho está vazio</p>
+            <p className="text-muted-foreground text-lg">
+              Seu carrinho está vazio
+            </p>
             <Button className="mt-4" onClick={() => navigate("/")}>
               Começar a comprar
             </Button>
@@ -55,8 +44,8 @@ const Cart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {cartItems.map((item: any) => (
-                <Card key={item.id} className="overflow-hidden">
+              {cartItems.map((item) => (
+                <Card key={item.cartId} className="overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       <img
@@ -64,7 +53,7 @@ const Cart = () => {
                         alt={item.name}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
-                      
+
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{item.name}</h3>
                         <p className="text-sm text-muted-foreground">
@@ -79,7 +68,7 @@ const Cart = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => handleRemoveItem(item.cartId)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -89,7 +78,12 @@ const Cart = () => {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, -1)}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.cartId,
+                                item.quantity - 1
+                              )
+                            }
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -100,7 +94,12 @@ const Cart = () => {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.cartId,
+                                item.quantity + 1
+                              )
+                            }
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -120,7 +119,7 @@ const Cart = () => {
               <Card className="sticky top-8">
                 <CardContent className="p-6 space-y-4">
                   <h2 className="text-xl font-bold">Resumo do Pedido</h2>
-                  
+
                   <Separator />
 
                   <div className="space-y-2">
@@ -139,8 +138,8 @@ const Cart = () => {
                     </span>
                   </div>
 
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     size="lg"
                     onClick={() => navigate("/checkout")}
                   >

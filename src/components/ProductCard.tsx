@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import { useState } from "react";
+import useShoppingCart from "@/hooks/use-cart";
 
 interface ProductCardProps {
   product: Product;
@@ -11,9 +12,11 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
+  const { addToCart, cartItems } = useShoppingCart();
+  const productInCart = !!cartItems.find((item) => item.id === product.id);
 
   const handleAddToCart = () => {
-    onAddToCart(product, quantity);
+    addToCart(product, quantity);
     setQuantity(1);
   };
 
@@ -26,7 +29,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
-      
+
       <CardContent className="p-4">
         <div className="mb-2">
           <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
@@ -34,7 +37,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             {product.description}
           </p>
         </div>
-        
+
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             R$ {product.price.toFixed(2)}
@@ -53,7 +56,9 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           >
             <Minus className="h-4 w-4" />
           </Button>
-          <span className="px-4 font-medium min-w-[3rem] text-center">{quantity}</span>
+          <span className="px-4 font-medium min-w-[3rem] text-center">
+            {quantity}
+          </span>
           <Button
             variant="ghost"
             size="icon"
@@ -64,11 +69,12 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
           </Button>
         </div>
 
-        <Button 
+        <Button
           className="flex-1"
           onClick={handleAddToCart}
+          disabled={productInCart}
         >
-          Adicionar
+          {productInCart ? "Adicionado ao carrinho" : "Adicionar ao carrinho"}
         </Button>
       </CardFooter>
     </Card>
