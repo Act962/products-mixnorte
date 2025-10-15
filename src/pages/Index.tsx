@@ -57,7 +57,7 @@ const Index = () => {
       <Navbar onSearch={setSearchQuery} />
 
       <div
-        className="h-64 bg-cover bg-center flex items-center justify-center mt-16"
+        className="h-64 bg-cover bg-center flex items-center justify-center mt-16 px-4"
         style={{ backgroundImage: `url(${acaiHero})` }}
       >
         <div className="bg-background/90 backdrop-blur-sm px-8 py-6 rounded-lg shadow-elegant">
