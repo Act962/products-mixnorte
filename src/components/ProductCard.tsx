@@ -4,19 +4,28 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import { useState } from "react";
 import useShoppingCart from "@/hooks/use-cart";
+import { toast } from "sonner";
+import imageUrlBuilder from "@sanity/image-url";
+import { client } from "@/lib/sanity";
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (product: Product, quantity: number) => void;
 }
 
-const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+const builder = imageUrlBuilder(client);
+
+function urlFor(source) {
+  return builder.image(source);
+}
+
+const ProductCard = ({ product }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, cartItems } = useShoppingCart();
   const productInCart = !!cartItems.find((item) => item.id === product.id);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
+    toast.success(`${product.name} atualizado no carrinho!`);
     setQuantity(1);
   };
 
@@ -24,8 +33,8 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     <Card className="overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in bg-gradient-card border-border">
       <div className="aspect-square overflow-hidden bg-muted">
         <img
-          src={product.image}
-          alt={product.name}
+          src={urlFor(product.image).url()}
+          alt={"TExto alternativo ainad não disponível"}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>

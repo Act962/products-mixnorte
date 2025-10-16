@@ -5,6 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import useShoppingCart from "@/hooks/use-cart";
 
+import imageUrlBuilder from "@sanity/image-url";
+import { client } from "@/lib/sanity";
+
+const builder = imageUrlBuilder(client);
+
+function urlFor(source) {
+  return builder.image(source);
+}
+
 const Cart = () => {
   const navigate = useNavigate();
   const { cartItems, updateQuantity, removeFromCart } = useShoppingCart();
@@ -49,7 +58,7 @@ const Cart = () => {
                   <CardContent className="p-4">
                     <div className="flex gap-4">
                       <img
-                        src={item.image}
+                        src={urlFor(item.image).url()}
                         alt={item.name}
                         className="w-24 h-24 object-cover rounded-lg"
                       />

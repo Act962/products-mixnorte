@@ -1,40 +1,20 @@
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { Loader2, SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import { products } from "@/data/products";
-import { CartItem, Product } from "@/types/product";
-import { toast } from "sonner";
 import acaiHero from "@/assets/acai-hero.jpg";
+import useProducts from "@/contexts/produtcts/hooks/use-products";
 
 const Index = () => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { items, isLoading } = useProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [sortBy, setSortBy] = useState("name");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    const existingItem = cart.find((item) => item.id === product.id);
-
-    if (existingItem) {
-      setCart(
-        cart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        )
-      );
-      toast.success(`${product.name} atualizado no carrinho!`);
-    } else {
-      setCart([...cart, { ...product, quantity }]);
-      toast.success(`${product.name} adicionado ao carrinho!`);
-    }
-  };
-
-  const filteredProducts = products
+  const filteredProducts = items
     .filter((product) => {
       const matchesSearch = product.name
         .toLowerCase()
@@ -50,8 +30,6 @@ const Index = () => {
       return 0;
     });
 
-  const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
   return (
     <div className="min-h-screen">
       <Navbar onSearch={setSearchQuery} />
@@ -62,10 +40,11 @@ const Index = () => {
       >
         <div className="bg-background/90 backdrop-blur-sm px-8 py-6 rounded-lg shadow-elegant">
           <h2 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            O melhor açaí da região!
+            Maior distribuidora de açaí, cremes, gelatos e completamentos da
+            região
           </h2>
           <p className="text-muted-foreground mt-2">
-            Produtos frescos e de qualidade direto do Norte
+            Tudo que você precisa para sua loja ou delivery em um só lugar
           </p>
         </div>
       </div>
@@ -104,15 +83,17 @@ const Index = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="h-32 flex items-center justify-center w-full">
+                <Loader2 className="animate-spin" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product) => {
+                  return <ProductCard key={product.id} product={product} />;
+                })}
+              </div>
+            )}
 
             {filteredProducts.length === 0 && (
               <div className="text-center py-12">
