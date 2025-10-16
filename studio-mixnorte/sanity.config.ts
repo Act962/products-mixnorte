@@ -1,6 +1,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
-import {visionTool} from '@sanity/vision'
+import {ptBRLocale} from '@sanity/locale-pt-br'
+// import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
@@ -10,7 +11,7 @@ export default defineConfig({
   projectId: 'psodomd7',
   dataset: 'production',
 
-  plugins: [structureTool(), visionTool()],
+  plugins: [structureTool(), ptBRLocale()],
 
   schema: {
     types: schemaTypes,

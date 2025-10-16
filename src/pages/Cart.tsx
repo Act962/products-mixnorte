@@ -14,6 +14,17 @@ function urlFor(source) {
   return builder.image(source);
 }
 
+function currencyFormatter(amount: number) {
+  const formatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+  return formatter.replace("R$", "");
+}
+
 const Cart = () => {
   const navigate = useNavigate();
   const { cartItems, updateQuantity, removeFromCart } = useShoppingCart();
@@ -59,7 +70,7 @@ const Cart = () => {
                     <div className="flex gap-4">
                       <img
                         src={urlFor(item.image).url()}
-                        alt={item.name}
+                        alt={item.image.alt}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
 
@@ -77,9 +88,10 @@ const Cart = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="group"
                           onClick={() => handleRemoveItem(item.cartId)}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4 text-destructive group-hover:text-white" />
                         </Button>
 
                         <div className="flex items-center gap-2">
@@ -115,7 +127,7 @@ const Cart = () => {
                         </div>
 
                         <p className="text-lg font-bold">
-                          R$ {(item.price * item.quantity).toFixed(2)}
+                          R${currencyFormatter(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>

@@ -40,10 +40,15 @@ const Navbar = ({ onSearch }: NavbarProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* <Button variant="outline" size="sm" className="hidden sm:flex">
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden sm:flex"
+            onClick={() => navigate("/register")}
+          >
             <User className="h-4 w-4 mr-2" />
-            Entrar
-          </Button> */}
+            Cadastrar
+          </Button>
 
           <Button
             variant="outline"

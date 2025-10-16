@@ -18,6 +18,17 @@ function urlFor(source) {
   return builder.image(source);
 }
 
+function currencyFormatter(amount: number) {
+  const formatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+  return formatter.replace("R$", "");
+}
+
 const ProductCard = ({ product }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, cartItems } = useShoppingCart();
@@ -34,7 +45,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="aspect-square overflow-hidden bg-muted">
         <img
           src={urlFor(product.image).url()}
-          alt={"TExto alternativo ainad não disponível"}
+          alt={product.image.alt}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
@@ -49,7 +60,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            R$ {product.price.toFixed(2)}
+            R${currencyFormatter(product.price)}
           </p>
           <span className="text-xs text-muted-foreground">{product.unit}</span>
         </div>
