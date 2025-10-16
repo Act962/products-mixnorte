@@ -6,7 +6,7 @@ type Category = {
   title: string;
 };
 
-const CATEGORY_QUERY = `*[_type == 'category'] {
+const CATEGORY_QUERY = `*[_type == 'category']|order(order asc){
   title
 }`;
 

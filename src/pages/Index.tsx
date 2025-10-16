@@ -35,7 +35,7 @@ const Index = () => {
       <Navbar onSearch={setSearchQuery} />
 
       <div
-        className="h-64 bg-cover bg-center flex items-center justify-center mt-16 px-4"
+        className="relative h-64 bg-cover bg-center flex items-center justify-center mt-16 px-4"
         style={{ backgroundImage: `url(${acaiHero})` }}
       >
         <div className="bg-background/90 backdrop-blur-sm px-8 py-6 rounded-lg shadow-elegant">
@@ -49,7 +49,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="relative container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <Sidebar
             selectedCategory={selectedCategory}

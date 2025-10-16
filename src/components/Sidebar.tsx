@@ -41,7 +41,7 @@ const Sidebar = ({
 
       <aside
         className={`
-        fixed inset-y-0 left-0 z-50
+        fixed inset-y-0 left-0 z-40
         w-80 lg:w-64 bg-card rounded-none lg:rounded-lg border-r lg:border border-border p-6 
         h-screen lg:h-fit lg:sticky lg:top-20 shadow-card
         transform transition-transform duration-300 ease-in-out
