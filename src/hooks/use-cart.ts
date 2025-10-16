@@ -1,7 +1,7 @@
 import useLocalStorage from "use-local-storage";
 import { Product } from "@/types/product";
 
-const CART_KEY = "cart_products";
+const CART_KEY = "@cart_products";
 
 export type CartItem = Product & {
   cartId: string;
