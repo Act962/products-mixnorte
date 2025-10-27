@@ -2,7 +2,7 @@ import { ShoppingCart, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useShoppingCart from "@/hooks/use-cart";
 
 interface NavbarProps {
@@ -21,14 +21,14 @@ const Navbar = ({ onSearch }: NavbarProps) => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-card ">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 cursor-pointer">
           <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden">
             <img src="/logo.png" alt="Logo do Mix Açaí" />
           </div>
           <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:block">
             Mix Norte
           </h1>
-        </div>
+        </Link>
 
         <div className="flex-1 max-w-md relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
