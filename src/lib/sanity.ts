@@ -6,6 +6,19 @@ export const client = createClient({
   dataset: "production",
   apiVersion: "2025-10-16",
   useCdn: false,
+  token:
+    "sk3CRGfq8RKdR3GwW0NDJpjZVeJwpc06OUgLoc10wibxwUjIKFdMzpySRnBZyOWVlNgowYX3TjqzdIXf5haZdx6VoctXgmWuhIfUiQU0nuop0nh9gqOkrUPIS1H75bOmQYXTlIZVP6Fg4t7kTy3J6ezuRPfiv4wy1PMnaPACnmURCQT8vxGk",
 });
 
-// deploymentId: gr9gdltyv94w0264s7xtlwfd
+export interface SanityProduct {
+  _type: "product";
+  name: string;
+  slug: {
+    _type: "slug";
+    current: string;
+  };
+  description?: string;
+  price: number;
+  unit?: string;
+  createdAt: string;
+}
