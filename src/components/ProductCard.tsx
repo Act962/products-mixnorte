@@ -7,6 +7,7 @@ import useShoppingCart from "@/hooks/use-cart";
 import { toast } from "sonner";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/lib/sanity";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +15,10 @@ interface ProductCardProps {
 
 const builder = imageUrlBuilder(client);
 
-function urlFor(source) {
+function urlFor(source: SanityImageSource | null | undefined) {
+  if (!source) {
+    return { url: () => "/default-fallback-image.png" };
+  }
   return builder.image(source);
 }
 
@@ -34,19 +38,34 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart, cartItems } = useShoppingCart();
   const productInCart = !!cartItems.find((item) => item.id === product.id);
 
+  // ✅ Validação de produto
+  if (!product) {
+    return null;
+  }
+
   const handleAddToCart = () => {
     addToCart(product, quantity);
     toast.success(`${product.name} atualizado no carrinho!`);
     setQuantity(1);
   };
 
+  // ✅ Proteção contra imagem inválida
+  const imageUrl = product.image
+    ? urlFor(product.image).url()
+    : "/placeholder-image.jpg";
+  const imageAlt = product.image?.alt || product.name || "Produto";
+
   return (
     <Card className="overflow-hidden hover:shadow-elegant transition-all duration-300 animate-fade-in bg-gradient-card border-border">
       <div className="aspect-square overflow-hidden bg-muted">
         <img
-          src={urlFor(product.image).url()}
-          alt={product.image.alt}
+          src={imageUrl}
+          alt={imageAlt}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            // ✅ Fallback se imagem falhar ao carregar
+            e.currentTarget.src = "/placeholder-image.jpg";
+          }}
         />
       </div>
 

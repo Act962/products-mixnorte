@@ -8,7 +8,7 @@ import acaiHero from "@/assets/acai-hero.jpg";
 import useProducts from "@/contexts/produtcts/hooks/use-products";
 
 const Index = () => {
-  const { items, isLoading } = useProducts();
+  const { items, isLoading, error, isError } = useProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [sortBy, setSortBy] = useState("name");
