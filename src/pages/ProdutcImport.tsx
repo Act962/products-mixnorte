@@ -59,7 +59,9 @@ const ProductImport = () => {
   const [importResults, setImportResults] = useState<{
     success: number;
     failed: number;
-  }>({ success: 0, failed: 0 });
+    errors: string[];
+  }>({ success: 0, failed: 0, errors: [] });
+  const [error, setError] = useState<string>("");
   const { toast } = useToast();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,38 +69,79 @@ const ProductImport = () => {
     if (!uploadedFile) return;
 
     setFile(uploadedFile);
-    const fileExtension = uploadedFile.name.split(".").pop()?.toLowerCase();
+    setError("");
 
-    if (fileExtension === "csv") {
-      Papa.parse(uploadedFile, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          setHeaders(results.meta.fields || []);
-          setData(results.data);
-          setStep("map");
-        },
-      });
-    } else if (fileExtension === "xlsx" || fileExtension === "xls") {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: "binary" });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const jsonData = XLSX.utils.sheet_to_json(ws);
+    try {
+      const fileExtension = uploadedFile.name.split(".").pop()?.toLowerCase();
 
-        if (jsonData.length > 0) {
-          setHeaders(Object.keys(jsonData[0] as object));
-          setData(jsonData);
-          setStep("map");
-        }
-      };
-      reader.readAsBinaryString(uploadedFile);
+      if (fileExtension === "csv") {
+        Papa.parse(uploadedFile, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: false,
+          delimitersToGuess: [",", "\t", "|", ";"],
+          complete: (results) => {
+            if (results.errors.length > 0) {
+              console.warn("CSV parsing warnings:", results.errors);
+            }
+
+            // Limpar headers removendo espaços em branco
+            const cleanHeaders = (results.meta.fields || []).map((h) =>
+              h.trim()
+            );
+            setHeaders(cleanHeaders);
+            setData(results.data as any[]);
+            setStep("map");
+          },
+          error: (err) => {
+            setError("Erro ao ler arquivo CSV: " + err.message);
+          },
+        });
+      } else if (fileExtension === "xlsx" || fileExtension === "xls") {
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          setError("Erro ao ler arquivo Excel");
+        };
+
+        reader.onload = (evt) => {
+          try {
+            const data = evt.target?.result;
+            const wb = XLSX.read(data, { type: "array" });
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            const jsonData = XLSX.utils.sheet_to_json(ws);
+
+            if (jsonData.length > 0) {
+              // Limpar headers removendo espaços em branco
+              const cleanHeaders = Object.keys(jsonData[0] as object).map((h) =>
+                h.trim()
+              );
+              setHeaders(cleanHeaders);
+              setData(jsonData);
+              setStep("map");
+            } else {
+              setError("Arquivo Excel está vazio");
+            }
+          } catch (err) {
+            setError(
+              "Erro ao processar arquivo Excel: " + (err as Error).message
+            );
+          }
+        };
+
+        reader.readAsArrayBuffer(uploadedFile);
+      } else {
+        setError("Formato de arquivo não suportado");
+      }
+    } catch (err) {
+      setError("Erro ao processar arquivo: " + (err as Error).message);
+      console.error(err);
     }
   };
 
   const generateSlug = (name: string): string => {
+    if (!name) return "";
     return name
       .toLowerCase()
       .normalize("NFD")
@@ -111,47 +154,100 @@ const ProductImport = () => {
     setStep("importing");
     let successCount = 0;
     let failedCount = 0;
+    const errors: string[] = [];
 
-    for (const row of data) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+
       try {
+        // Extrair valores e limpar espaços
+        const productName = row[mapping.name]?.toString().trim();
+        const priceStr = row[mapping.price]?.toString().trim();
+        const productDescription = mapping.description
+          ? row[mapping.description]?.toString().trim()
+          : undefined;
+        const productUnit = mapping.unit
+          ? row[mapping.unit]?.toString().trim()
+          : undefined;
+
+        // Validações
+        if (!productName) {
+          errors.push(`Linha ${i + 1}: Nome do produto está vazio`);
+          failedCount++;
+          continue;
+        }
+
+        if (!priceStr) {
+          errors.push(
+            `Linha ${i + 1}: Preço está vazio para o produto "${productName}"`
+          );
+          failedCount++;
+          continue;
+        }
+
+        // Converter preço - aceita vírgula e ponto como decimal
+        const productPrice = parseFloat(priceStr.replace(",", "."));
+
+        if (isNaN(productPrice) || productPrice < 0) {
+          errors.push(
+            `Linha ${
+              i + 1
+            }: Preço inválido (${priceStr}) para o produto "${productName}"`
+          );
+          failedCount++;
+          continue;
+        }
+
+        // Criar produto
         const product: SanityProduct = {
           _type: "product",
-          name: row[mapping.name],
+          name: productName,
           slug: {
             _type: "slug",
-            current: generateSlug(row[mapping.name]),
+            current: generateSlug(productName),
           },
-          description: mapping.description
-            ? row[mapping.description]
-            : undefined,
-          price: parseFloat(row[mapping.price]),
-          unit: mapping.unit ? row[mapping.unit] : undefined,
+          description: productDescription,
+          price: productPrice,
+          unit: productUnit,
           createdAt: new Date().toISOString(),
         };
 
+        console.log(`Importando produto ${i + 1}/${data.length}:`, product);
+
+        // Criar no Sanity
         await client.create(product);
+
         successCount++;
-      } catch (error) {
-        console.error("Error importing product:", error);
+        console.log(`✓ Produto importado: ${productName}`);
+      } catch (error: any) {
+        const productName =
+          row[mapping.name]?.toString().trim() || "desconhecido";
+        const errorMsg = error?.message || "Erro desconhecido";
+
+        console.error(`✗ Erro ao importar produto "${productName}":`, error);
+        errors.push(`Linha ${i + 1} (${productName}): ${errorMsg}`);
         failedCount++;
       }
     }
 
-    setImportResults({ success: successCount, failed: failedCount });
+    setImportResults({ success: successCount, failed: failedCount, errors });
     setStep("done");
 
     toast({
-      title: "Importação concluída",
-      description: `${successCount} produtos importados com sucesso. ${failedCount} falharam.`,
+      title:
+        importResults.failed === 0
+          ? "Importação concluída com sucesso!"
+          : "Importação concluída com erros",
+      description: `${successCount} produtos importados. ${failedCount} falharam.`,
     });
   };
 
   const getMappedData = () => {
     return data.slice(0, 5).map((row) => ({
-      name: row[mapping.name] || "",
-      description: row[mapping.description] || "",
-      price: row[mapping.price] || "",
-      unit: row[mapping.unit] || "",
+      name: row[mapping.name]?.toString().trim() || "",
+      description: row[mapping.description]?.toString().trim() || "",
+      price: row[mapping.price]?.toString().trim() || "",
+      unit: row[mapping.unit]?.toString().trim() || "",
     }));
   };
 
@@ -169,6 +265,15 @@ const ProductImport = () => {
             Faça upload de um arquivo CSV ou XLSX para importar produtos
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              {error}
+            </p>
+          </div>
+        )}
 
         {/* Upload Step */}
         {step === "upload" && (
@@ -428,6 +533,24 @@ const ProductImport = () => {
                     )}
                   </div>
                 </div>
+
+                {importResults.errors.length > 0 && (
+                  <div className="w-full max-w-2xl">
+                    <details className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <summary className="cursor-pointer font-semibold text-red-800 mb-2">
+                        Ver detalhes dos erros ({importResults.errors.length})
+                      </summary>
+                      <ul className="space-y-1 text-sm text-red-700 max-h-60 overflow-y-auto">
+                        {importResults.errors.map((error, idx) => (
+                          <li key={idx} className="pl-4">
+                            • {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  </div>
+                )}
+
                 <Button onClick={() => window.location.reload()}>
                   Importar Novamente
                 </Button>
