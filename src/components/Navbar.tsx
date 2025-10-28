@@ -13,10 +13,9 @@ const Navbar = ({ onSearch }: NavbarProps) => {
   const navigate = useNavigate();
   const { cartItems } = useShoppingCart();
 
-  const cardItemsCount = cartItems.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  const cardItemsCount = cartItems
+    ? cartItems.reduce((sum, item) => sum + item.quantity, 0)
+    : 0;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-card ">
